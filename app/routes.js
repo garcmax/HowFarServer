@@ -24,7 +24,7 @@ module.exports = function(app, express) {
         .post(function(req, res) {
             User.findOne(req.body.login, function (err, user) {
                 if (user.password != req.body.password)
-                    res.send('bad login / password');
+                    res.status(401).json({error : 'bad login'});
                 else {
                     res.location('/users/' + user._id);
                     res.status(201).send(null);
