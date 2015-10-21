@@ -30,3 +30,6 @@ node_modules
 
 #distribution package
 dist
+
+#certificat
+config/*.pem

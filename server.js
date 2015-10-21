@@ -5,14 +5,24 @@ var bodyParser     = require('body-parser');
 var methodOverride = require('method-override');
 var mongoose       = require('mongoose');
 var path           = require('path');
+var https          = require('https');
+var http           = require('http');
+var fs             = require('fs');
 
 // configuration ===========================================
 
 // config files
 var db = require('./config/db');
+var config = require('./config/serverConfig');
+
+//get certificat
+var options = {
+    key:fs.readFileSync('./config/key.pem'),
+    cert:fs.readFileSync('./config/cert.pem')
+};
 
 // set our port
-var port = process.env.PORT || 8080;
+//var port = process.env.PORT || 8443;
 
 // connect to our mongoDB database
 mongoose.connect(db.url);
@@ -39,11 +49,13 @@ require('./app/routes')(app, express);
 
 
 // start app ===============================================
-// startup our app at http://localhost:8080
-app.listen(port);
+http.createServer(app).listen(config.httpPort);
+https.createServer(options, app).listen(config.httpsPort);
+
 
 // shoutout to the user
-console.log('Magic happens on port ' + port);
+console.log('Http magic happens on port ' + config.httpPort);
+console.log('Https magic happens on port ' + config.httpsPort);
 //console.log("__dirname = %s", path.resolve(__dirname));
 
 // expose app

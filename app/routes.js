@@ -20,9 +20,21 @@ module.exports = function(app, express) {
    });
 
    // more routes for our API will happen here
+    router.route('/login')
+        .post(function(req, res) {
+            User.findOne(req.body.login, function (err, user) {
+                if (user.password != req.body.password)
+                    res.send('bad login / password');
+                else {
+                    res.location('/users/' + user._id);
+                    res.status(201).send(null);
+                }
+            });
+        });
+
 
     //create a new user and get them all
-    router.route('/user')
+    router.route('/users')
         .post(function(req, res) {
             var user = new User();
             user.login = req.body.login;
@@ -31,7 +43,10 @@ module.exports = function(app, express) {
             user.save(function(err) {
                 if (err)
                     res.send(err);
-                res.json({message: 'user created'});
+                else {
+                    res.location('/users/' + user._id);
+                    res.status(201).send(null);
+                }
             });
         })
         .get(function(req, res) {
@@ -43,7 +58,7 @@ module.exports = function(app, express) {
         });
 
 
-    router.route('/user/:user_id')
+    router.route('/users/:user_id')
         .get(function(req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
