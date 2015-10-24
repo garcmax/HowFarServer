@@ -1,5 +1,6 @@
 var User = require('./models/user');
 var path = require('path');
+var bcrypt = require('bcrypt-nodejs');
 
 module.exports = function(app, express) {
    // ROUTES FOR OUR API
@@ -26,12 +27,12 @@ module.exports = function(app, express) {
     router.route('/login')
         .post(function(req, res) {
             User.findOne(req.body.login, function (err, user) {
-                if (user.password != req.body.password)
-                    res.status(401).json({error : 'bad login'});
-                else {
+                if (bcrypt.compareSync(req.body.password, user.password)) {
                     res.location('/users/' + user._id);
                     res.status(200).send(null);
                 }
+                else
+                    res.status(401).json({error : 'bad login'});
             });
         });
 
@@ -40,8 +41,7 @@ module.exports = function(app, express) {
         .post(function(req, res) {
             var user = new User();
             user.login = req.body.login;
-            user.password = req.body.password;
-
+            user.password = bcrypt.hashSync(req.body.password);
             user.save(function(err) {
                 if (err)
                     res.status(500).json({error : "fail to register"});
