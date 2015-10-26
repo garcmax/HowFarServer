@@ -26,13 +26,15 @@ module.exports = function(app, express) {
    //log the user
     router.route('/login')
         .post(function(req, res) {
-            User.findOne(req.body.login, function (err, user) {
+            User.findByLogin(req.body.login, function (err, userArr) {
+            user = userArr[0];
                 if (bcrypt.compareSync(req.body.password, user.password)) {
+                    console.log(user);
                     res.location('/users/' + user._id);
                     res.status(200).send(null);
                 }
                 else
-                    res.status(401).json({error : 'bad login'});
+                    res.status(401).json({error : "bad login"});
             });
         });
 
@@ -63,14 +65,92 @@ module.exports = function(app, express) {
         });
 
 
-    //get one user from his id
     router.route('/users/:user_id')
+        //get one user from his id
         .get(function(req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
                     res.send(err);
                 res.json(user);
             })
+        })
+        //update the login of a user
+        .put(function(req, res) {
+            User.findById(req.params.user_id, function(err, user) {
+                if (err)
+                    res.send(err);
+                user.login = req.body.login;
+                user.save(function (err) {
+                    if (err)
+                        res.send(err);
+                    else
+                        res.status(200).send(null);
+                });
+            });
+        });
+
+
+    router.route('/users/:user_id/friends')
+        //get all friends
+        .get(function (req, res) {
+            User.findById(req.params.user_id, function(err, user) {
+                if (err)
+                    res.send(err);
+                res.json(user.friendsList);
+            });
+        })
+        //add a friend
+        .put(function (req, res) {
+            User.findById(req.params.user_id, function(err, user) {
+                if (err)
+                    res.status(404).json({error : "user not found"});
+                else {
+                    var friendExist = false;
+                    user.friendsList.forEach(function(friend) {
+                        if (friend.friendId == req.body.friendId)
+                            friendExist = true;
+                    });
+                    if (friendExist)
+                        res.status(403).json({error : "Friend already exist"});
+                    else {
+                        user.friendsList.push(req.body);
+                        user.save(function (err) {
+                            if (err)
+                                res.status(500).json({error : "fail to add friend"});
+                            else
+                                res.status(200).send(null);
+                        });
+                    }
+                }
+            });
+        })
+        //delete a friend
+        .delete(function(req, res) {
+            User.findById(req.params.user_id, function(err, user) {
+                if (err)
+                    res.status(404).json({error : "user not found"});
+                else {
+                    var friendExist = false;
+                    var index;
+                    user.friendsList.forEach(function(friend, i) {
+                        if (friend.friendId == req.body.friendId) {
+                            friendExist = true;
+                            index = i;
+                        }
+                    });
+                    if (friendExist) {
+                        user.friendsList.splice(index, 1);
+                        user.save(function (err) {
+                            if (err)
+                                res.status(500).json({error : "fail to delete friend"});
+                            else
+                                res.status(200).send(null);
+                        });
+                    } else {
+                        res.status(404).json({error : "Friend not found"});
+                    }
+                }
+            });
         });
 
    // REGISTER OUR ROUTES -------------------------------
