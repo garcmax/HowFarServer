@@ -6,8 +6,8 @@ var schema = mongoose.Schema;
 var friendSchema = new schema({friendId: String});
 
 var userSchema = new schema({
-    login: String,
-    password: String,
+    username: {type: String, required: true},
+    password: {type: String, required: true},
     date: {type: Date, default: Date.now},
     location: {
         longitude: String,
@@ -18,8 +18,8 @@ var userSchema = new schema({
     friendsList: [friendSchema]
     });
 
-userSchema.static('findByLogin', function (login, callback) {
-  return this.find({ login: login }, callback);
+userSchema.static('findByUsername', function (username, callback) {
+  return this.find({ username: username }, callback);
 });
 
 module.exports = mongoose.model('User', userSchema);

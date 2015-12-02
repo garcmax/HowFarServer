@@ -12,8 +12,9 @@ var fs             = require('fs');
 // configuration ===========================================
 
 // config files
-var db = require('../config/db');
+//var db = require('../config/db');
 var config = require('../config/serverConfig');
+console.log(config);
 
 //get certificat
 /*var options = {
@@ -25,7 +26,13 @@ var config = require('../config/serverConfig');
 //var port = process.env.PORT || 8443;
 
 // connect to our mongoDB database
-mongoose.connect(db.cloud);
+mongoose.connect(config.mongoURI[config.env], function(err, res) {
+  if(err) {
+    console.log('Error connecting to the database. ' + err);
+  } else {
+    console.log('Connected to Database: ' + config.mongoURI[config.env]);
+  }
+});
 
 // get all data/stuff of the body (POST) parameters
 // parse application/json
@@ -49,12 +56,12 @@ require('../app/routes')(app, express);
 
 
 // start app ===============================================
-http.createServer(app).listen(config.httpPort);
+http.createServer(app).listen(config.port.httpPort);
 //https.createServer(options, app).listen(config.httpsPort);
 
 
 // shoutout to the user
-console.log('Http magic happens on port ' + config.httpPort);
+console.log('Http magic happens on port ' + config.port.httpPort);
 //console.log('Https magic happens on port ' + config.httpsPort);
 //console.log("__dirname = %s", path.resolve(__dirname));
 

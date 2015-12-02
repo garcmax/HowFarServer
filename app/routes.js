@@ -10,10 +10,10 @@ module.exports = function(app, express) {
     // middleware to use for all requests
     router.use(function(req, res, next) {
         // do logging
-        if (req) {
-            console.log("req : ");
-            console.log(req.body);
-        }
+        // if (req) {
+        //     console.log("req : ");
+        //     console.log(req.body);
+        // }
         next(); // make sure we go to the next routes and don't stop here
     });
 
@@ -28,15 +28,14 @@ module.exports = function(app, express) {
    //log the user
     router.route('/login')
         .post(function(req, res) {
-            User.findByLogin(req.body.login, function (err, userArr) {
+            User.findByUsername(req.body.username, function (err, userArr) {
             var user = userArr[0];
                 if (bcrypt.compareSync(req.body.password, user.password)) {
-                    console.log(user);
                     res.location('/users/' + user._id);
                     res.status(200).send({success : "logged"});
                 }
                 else
-                    res.status(401).json({error : "bad login"});
+                    res.status(401).json({error : "bad credentials"});
             });
         });
 
@@ -44,7 +43,7 @@ module.exports = function(app, express) {
     router.route('/register')
         .post(function(req, res) {
             var user = new User();
-            user.login = req.body.login;
+            user.username = req.body.username;
             user.password = bcrypt.hashSync(req.body.password);
             user.save(function(err) {
                 if (err)
@@ -81,12 +80,12 @@ module.exports = function(app, express) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
                     res.send(err);
-                user.login = req.body.login;
+                user.username = req.body.username;
                 user.save(function (err) {
                     if (err)
-                        res.status(500).json({error : "fail to change login"});
+                        res.status(500).json({error : "fail to change username"});
                     else
-                        res.status(200).send({success : "login changed"});
+                        res.status(200).send({success : "username changed"});
                 });
             });
         });
