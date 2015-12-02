@@ -10,8 +10,10 @@ module.exports = function(app, express) {
     // middleware to use for all requests
     router.use(function(req, res, next) {
         // do logging
-        if (req)
+        if (req) {
+            console.log("req : ");
             console.log(req.body);
+        }
         next(); // make sure we go to the next routes and don't stop here
     });
 
@@ -27,11 +29,11 @@ module.exports = function(app, express) {
     router.route('/login')
         .post(function(req, res) {
             User.findByLogin(req.body.login, function (err, userArr) {
-            user = userArr[0];
+            var user = userArr[0];
                 if (bcrypt.compareSync(req.body.password, user.password)) {
                     console.log(user);
                     res.location('/users/' + user._id);
-                    res.status(200).send(null);
+                    res.status(200).send({success : "logged"});
                 }
                 else
                     res.status(401).json({error : "bad login"});
@@ -49,7 +51,7 @@ module.exports = function(app, express) {
                     res.status(500).json({error : "fail to register"});
                 else {
                     res.location('/users/' + user._id);
-                    res.status(201).send(null);
+                    res.status(201).send({success : "user created"});
                 }
             });
         });
@@ -59,7 +61,7 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             User.find(function(err, users) {
                 if (err)
-                    res.send(err);
+                    res.status(500).json({error : "fail to get users"});
                 res.json(users);
             });
         });
@@ -70,7 +72,7 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.send(err);
+                    res.status(500).json({error : "fail to get user"});
                 res.json(user);
             })
         })
@@ -82,9 +84,9 @@ module.exports = function(app, express) {
                 user.login = req.body.login;
                 user.save(function (err) {
                     if (err)
-                        res.send(err);
+                        res.status(500).json({error : "fail to change login"});
                     else
-                        res.status(200).send(null);
+                        res.status(200).send({success : "login changed"});
                 });
             });
         });
@@ -95,7 +97,7 @@ module.exports = function(app, express) {
         .get(function (req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.send(err);
+                    res.status(500).json({error : "fail to get friends"});
                 res.json(user.friendsList);
             });
         })
@@ -111,15 +113,15 @@ module.exports = function(app, express) {
                             friendExist = true;
                     });
                     if (friendExist)
-                        res.status(403).json({error : "Friend already exist"});
+                        res.status(403).json({error : "friend already exist"});
                     else {
                         user.friendsList.push(req.body);
                         user.save(function (err) {
                             if (err)
                                 res.status(500).json({error : "fail to add friend"});
                             else
-                                res.status(200).send(null);
-                        });
+                                res.status(201).send({success : "friend added"});
+                        })
                     }
                 }
             });
@@ -144,10 +146,10 @@ module.exports = function(app, express) {
                             if (err)
                                 res.status(500).json({error : "fail to delete friend"});
                             else
-                                res.status(200).send(null);
+                                res.status(200).send({success : "friend deleted"});
                         });
                     } else {
-                        res.status(404).json({error : "Friend not found"});
+                        res.status(404).json({error : "friend not found"});
                     }
                 }
             });

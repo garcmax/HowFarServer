@@ -12,20 +12,20 @@ var fs             = require('fs');
 // configuration ===========================================
 
 // config files
-var db = require('./config/db');
-var config = require('./config/serverConfig');
+var db = require('../config/db');
+var config = require('../config/serverConfig');
 
 //get certificat
-var options = {
+/*var options = {
     key:fs.readFileSync('./config/key.pem'),
     cert:fs.readFileSync('./config/cert.pem')
-};
+};*/
 
 // set our port
 //var port = process.env.PORT || 8443;
 
 // connect to our mongoDB database
-mongoose.connect(db.url);
+mongoose.connect(db.cloud);
 
 // get all data/stuff of the body (POST) parameters
 // parse application/json
@@ -45,17 +45,17 @@ app.use(methodOverride('X-HTTP-Method-Override'));
 
 // routes ==================================================
 /*require('./app/routes')(app); // configure our routes*/
-require('./app/routes')(app, express);
+require('../app/routes')(app, express);
 
 
 // start app ===============================================
 http.createServer(app).listen(config.httpPort);
-https.createServer(options, app).listen(config.httpsPort);
+//https.createServer(options, app).listen(config.httpsPort);
 
 
 // shoutout to the user
 console.log('Http magic happens on port ' + config.httpPort);
-console.log('Https magic happens on port ' + config.httpsPort);
+//console.log('Https magic happens on port ' + config.httpsPort);
 //console.log("__dirname = %s", path.resolve(__dirname));
 
 // expose app
