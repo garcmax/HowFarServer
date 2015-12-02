@@ -33,3 +33,6 @@ dist
 
 #certificat
 config/*.pem
+
+#logs
+test/*.txt
