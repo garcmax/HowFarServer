@@ -14,7 +14,6 @@ var fs             = require('fs');
 // config files
 //var db = require('../config/db');
 var config = require('../config/serverConfig');
-console.log(config);
 
 //get certificat
 /*var options = {

@@ -4,9 +4,9 @@ config.port = {
         httpPort: '8080'
     };
 config.mongoURI = {
-        local : 'mongodb://localhost/howfar',
+        dev : 'mongodb://localhost/howfar',
         cloud : 'mongodb://howfar:howfarpwd@ds049624.mongolab.com:49624/howfar',
         test  : 'mongodb://localhost/node-test'
     };
-config.env = process.env.NODE_ENV;
+config.env = process.env.NODE_ENV || "dev";
 module.exports = config;

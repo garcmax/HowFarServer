@@ -28,26 +28,39 @@ module.exports = function(app, express) {
    //log the user
     router.route('/login')
         .post(function(req, res) {
-            User.findByUsername(req.body.username, function (err, userArr) {
-            var user = userArr[0];
+            User.findByUsername(req.body.username, function (err, userArr) {         
+                if (err) {
+                    res.status(500).send({error : "login server error"});
+                    return;
+                }
+                if(userArr.length == 0) {
+                    res.status(401).send({error : "bad credentials"});
+                    return;
+                }
+                var user = userArr[0];
                 if (bcrypt.compareSync(req.body.password, user.password)) {
                     res.location('/users/' + user._id);
                     res.status(200).send({success : "logged"});
                 }
                 else
-                    res.status(401).json({error : "bad credentials"});
-            });
+                    res.status(401).send({error : "bad credentials"});
+                });
         });
 
     //register the user
     router.route('/register')
         .post(function(req, res) {
+            var body = req.body;
+            if (body.username.length < 3 || body.password.length < 4) {
+                res.status(400).send({error : "username or password too short"});
+                return;
+            }
             var user = new User();
             user.username = req.body.username;
             user.password = bcrypt.hashSync(req.body.password);
             user.save(function(err) {
                 if (err)
-                    res.status(500).json({error : "fail to register"});
+                    res.status(500).send({error : "fail to register"});
                 else {
                     res.location('/users/' + user._id);
                     res.status(201).send({success : "user created"});
@@ -60,7 +73,7 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             User.find(function(err, users) {
                 if (err)
-                    res.status(500).json({error : "fail to get users"});
+                    res.status(500).send({error : "fail to get users"});
                 res.json(users);
             });
         });
@@ -71,7 +84,7 @@ module.exports = function(app, express) {
         .get(function(req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.status(500).json({error : "fail to get user"});
+                    res.status(500).send({error : "fail to get user"});
                 res.json(user);
             })
         })
@@ -83,7 +96,7 @@ module.exports = function(app, express) {
                 user.username = req.body.username;
                 user.save(function (err) {
                     if (err)
-                        res.status(500).json({error : "fail to change username"});
+                        res.status(500).send({error : "fail to change username"});
                     else
                         res.status(200).send({success : "username changed"});
                 });
@@ -96,7 +109,7 @@ module.exports = function(app, express) {
         .get(function (req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.status(500).json({error : "fail to get friends"});
+                    res.status(500).send({error : "fail to get friends"});
                 res.json(user.friendsList);
             });
         })
@@ -104,7 +117,7 @@ module.exports = function(app, express) {
         .put(function (req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.status(404).json({error : "user not found"});
+                    res.status(404).send({error : "user not found"});
                 else {
                     var friendExist = false;
                     user.friendsList.forEach(function(friend) {
@@ -112,12 +125,12 @@ module.exports = function(app, express) {
                             friendExist = true;
                     });
                     if (friendExist)
-                        res.status(403).json({error : "friend already exist"});
+                        res.status(403).send({error : "friend already exist"});
                     else {
                         user.friendsList.push(req.body);
                         user.save(function (err) {
                             if (err)
-                                res.status(500).json({error : "fail to add friend"});
+                                res.status(500).send({error : "fail to add friend"});
                             else
                                 res.status(201).send({success : "friend added"});
                         })
@@ -129,7 +142,7 @@ module.exports = function(app, express) {
         .delete(function(req, res) {
             User.findById(req.params.user_id, function(err, user) {
                 if (err)
-                    res.status(404).json({error : "user not found"});
+                    res.status(404).send({error : "user not found"});
                 else {
                     var friendExist = false;
                     var index;
@@ -143,12 +156,12 @@ module.exports = function(app, express) {
                         user.friendsList.splice(index, 1);
                         user.save(function (err) {
                             if (err)
-                                res.status(500).json({error : "fail to delete friend"});
+                                res.status(500).send({error : "fail to delete friend"});
                             else
                                 res.status(200).send({success : "friend deleted"});
                         });
                     } else {
-                        res.status(404).json({error : "friend not found"});
+                        res.status(404).send({error : "friend not found"});
                     }
                 }
             });

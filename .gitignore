@@ -1,5 +1,6 @@
 # Logs
 logs
+test/*.txt
 
 # Runtime data
 pids
@@ -25,14 +26,12 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 
-#intelliJ
+#IDE
 .idea
+typings
 
 #distribution package
 dist
 
 #certificat
 config/*.pem
-
-#logs
-test/*.txt
