@@ -8,6 +8,7 @@ var path           = require('path');
 var https          = require('https');
 var http           = require('http');
 var fs             = require('fs');
+var morgan         = require('morgan');
 
 // configuration ===========================================
 
@@ -32,6 +33,9 @@ mongoose.connect(config.mongoURI[config.env], function(err, res) {
     console.log('Connected to Database: ' + config.mongoURI[config.env]);
   }
 });
+
+// log all the request
+app.use(morgan(config.log.format));
 
 // get all data/stuff of the body (POST) parameters
 // parse application/json

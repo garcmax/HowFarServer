@@ -9,4 +9,7 @@ config.mongoURI = {
         test  : 'mongodb://localhost/node-test'
     };
 config.env = process.env.NODE_ENV || "dev";
+config.log = {
+    format: process.env.LOG_FORMAT || "dev"
+}
 module.exports = config;

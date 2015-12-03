@@ -41,7 +41,9 @@ describe('Testing login and register', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           res.body.should.have.property('success');
-          res.body.success.should.equal('user created')
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('user created');
           done();
       });
   });
@@ -53,7 +55,9 @@ describe('Testing login and register', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           res.body.should.have.property('success');
-          res.body.success.should.equal('logged')
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('logged');
           done();
       });
   });
@@ -64,8 +68,10 @@ describe('Testing login and register', function() {
           res.should.have.status(401);
           res.should.be.json;
           res.body.should.be.a('object');
-          res.body.should.have.property('error');
-          res.body.error.should.equal('bad credentials')
+          res.body.should.have.property('success');
+          res.body.success.should.equal(false);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('bad credentials');
           done();
       });
   });
@@ -76,8 +82,10 @@ describe('Testing login and register', function() {
           res.should.have.status(401);
           res.should.be.json;
           res.body.should.be.a('object');
-          res.body.should.have.property('error');
-          res.body.error.should.equal('bad credentials')
+          res.body.should.have.property('success');
+          res.body.success.should.equal(false);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('bad credentials');
           done();
       });
   });
@@ -89,7 +97,9 @@ describe('Testing login and register', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           res.body.should.have.property('success');
-          res.body.success.should.equal('user created')
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('user created');
           done();
       });
   });
@@ -101,7 +111,9 @@ describe('Testing login and register', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           res.body.should.have.property('success');
-          res.body.success.should.equal('logged')
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('logged');
           done();
       });
   });
@@ -113,7 +125,9 @@ describe('Testing login and register', function() {
           res.should.be.json;
           res.body.should.be.a('object');
           res.body.should.have.property('success');
-          res.body.success.should.equal('user created')
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('user created');
           done();
       });
   });
@@ -124,8 +138,10 @@ describe('Testing login and register', function() {
           res.should.have.status(200);
           res.should.be.json;
           res.body.should.be.a('object');
-          res.body.should.have.property('success');
-          res.body.success.should.equal('logged')
+           res.body.should.have.property('success');
+          res.body.success.should.equal(true);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('logged');
           done();
       });
   });
@@ -136,8 +152,10 @@ describe('Testing login and register', function() {
           res.should.have.status(400);
           res.should.be.json;
           res.body.should.be.a('object');
-          res.body.should.have.property('error');
-          res.body.error.should.equal('username or password too short')
+          res.body.should.have.property('success');
+          res.body.success.should.equal(false);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('username or password too short');
           done();
       });
   });
@@ -147,9 +165,10 @@ describe('Testing login and register', function() {
       .end(function(err, res) {
           res.should.have.status(400);
           res.should.be.json;
-          res.body.should.be.a('object');
-          res.body.should.have.property('error');
-          res.body.error.should.equal('username or password too short')
+          res.body.should.have.property('success');
+          res.body.success.should.equal(false);
+          res.body.should.have.property('message');
+          res.body.message.should.equal('username or password too short');
           done();
       });
   });
