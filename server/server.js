@@ -22,9 +22,6 @@ var config = require('../config/serverConfig');
     cert:fs.readFileSync('./config/cert.pem')
 };*/
 
-// set our port
-//var port = process.env.PORT || 8443;
-
 // connect to our mongoDB database
 mongoose.connect(config.mongoURI[config.env], function(err, res) {
   if(err) {
