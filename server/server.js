@@ -56,12 +56,12 @@ require('../app/routes')(app, express);
 
 
 // start app ===============================================
-http.createServer(app).listen(config.port.httpPort);
+http.createServer(app).listen(config.port.default);
 //https.createServer(options, app).listen(config.httpsPort);
 
 
 // shoutout to the user
-console.log('Http magic happens on port ' + config.port.httpPort);
+console.log('Http magic happens on port ' + config.port.default);
 //console.log('Https magic happens on port ' + config.httpsPort);
 //console.log("__dirname = %s", path.resolve(__dirname));
 

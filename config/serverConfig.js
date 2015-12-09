@@ -1,7 +1,9 @@
+var fs             = require('fs');
+
 var config = {};
 config.port = {
-        httpsPort: '8443',
-        httpPort: '8080'
+        https: '8443',
+        default: '8080'
     };
 config.mongoURI = {
         dev : 'mongodb://localhost/howfar',
@@ -12,5 +14,10 @@ config.env = process.env.NODE_ENV || "dev";
 config.log = {
     format: process.env.LOG_FORMAT || "dev"
 }
-config.secret = process.env.JWT_SECRET || "supersecret"
+
+config.jwt = {
+    issuer : process.env.JWT_ISSUER || 'niwamaxou',
+    secret : process.env.JWT_SECRET || "supersecret",
+    expire : process.env.JWT_EXPIRE || "120000"
+}
 module.exports = config;
