@@ -22,7 +22,7 @@ module.exports = function (app, express) {
                 if (err)
                     res.status(401).json({ success: false, message: "failed to authenticate token" });
                 else {
-                    req.decoded = decoded;                    
+                    req.decoded = decoded;
                 }
                 next(); // make sure we go to the next routes and don't stop here
             });
@@ -51,13 +51,15 @@ module.exports = function (app, express) {
                     res.status(401).json({ success: false, message: "bad credentials" });
                     return;
                 }
-                var user = userArr[0];
-                if (bcrypt.compareSync(req.body.password, user.password)) {
-                    res.location('/users/' + user._id);
-                    res.status(200).json({ success: true, message: "logged" });
+
+                for (var i = 0; i < userArr.length; i++) {
+                    if (bcrypt.compareSync(req.body.password, userArr[i].password)) {
+                        res.location('/users/' + userArr[i]._id);
+                        res.status(200).json({ success: true, message: "logged" });
+                        return;
+                    }
                 }
-                else
-                    res.status(401).json({ success: false, message: "bad credentials" });
+                res.status(401).json({ success: false, message: "bad credentials" });
             });
         });
 
@@ -100,7 +102,7 @@ module.exports = function (app, express) {
 
     router.route('/users/:user_id')
     //get one user from his id
-        .get(function (req, res) {                       
+        .get(function (req, res) {
             if (req.decoded.aud != req.params.user_id) {
                 res.status(403).json({ success: false, message: 'bad token' });
             }
@@ -137,14 +139,14 @@ module.exports = function (app, express) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
                     res.status(500).json({ success: false, message: "fail to get friends" });
-                res.json(user.friendsList);
+                res.status(200).json({success : true, friendList : user.friendsList});
             });
         })
     //add a friend
         .put(function (req, res) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(404).json({ success: false, message: "user not found" });
+                    res.status(500).json({ success: false, message: "internal error when seeking user" });
                 else {
                     var friendExist = false;
                     user.friendsList.forEach(function (friend) {
@@ -169,7 +171,7 @@ module.exports = function (app, express) {
         .delete(function (req, res) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(404).json({ success: false, message: "user not found" });
+                    res.status(500).json({ success: false, message: "internal error when seeking user" });
                 else {
                     var friendExist = false;
                     var index;
@@ -193,6 +195,27 @@ module.exports = function (app, express) {
                 }
             });
         });
+        
+     router.route('/users/:user_id/location')
+     //get location of the user
+     .get(function (req, res) {
+        
+     })
+     .put(function (req, res) {
+         User.findById(req.params.user_id, function (err, user) {
+            if (err)
+                res.status(500).json({ success: false, message: "internal error when seeking user" });
+            else {
+                user.loc = req.body.loc;
+                user.save(function (err) {
+                if (err)
+                    res.status(500).json({ success: false, message: "fail to update location" });
+                else
+                    res.status(200).json({ success: true, message: "location updated" });
+                });
+            }
+         });
+     })
 
     // REGISTER OUR ROUTES -------------------------------
     // all of our routes will be prefixed with /api

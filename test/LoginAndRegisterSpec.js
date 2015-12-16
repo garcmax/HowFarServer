@@ -17,12 +17,18 @@ chai.use(chaiHttp);
 describe('Testing login and register', function () {
 
   this.timeout(2000);
-  User.collection.drop();
 
-   beforeEach(function(done){
-     done();
-   });  
-    
+
+  before(function (done) {
+    User.collection.drop();
+    done();
+  });
+
+  after(function (done) {
+    User.collection.drop();
+    done();
+  })
+
   it('should register user : user/password', function (done) {
     chai.request(server)
       .post('/api/register').send({ username: "user", password: "password" })
@@ -169,6 +175,32 @@ describe('Testing login and register', function () {
         res.body.should.have.property('message');
         res.body.message.should.equal('username or password too short');
         done();
+      });
+  });
+  it('should register and log user : user/testpwd', function (done) {
+    chai.request(server)
+      .post('/api/register').send({ username: "user", password: "testpwd" })
+      .end(function (err, res) {
+        res.should.have.status(201);
+        res.should.be.json;
+        res.body.should.be.a('object');
+        res.body.should.have.property('success');
+        res.body.success.should.equal(true);
+        res.body.should.have.property('message');
+        res.body.message.should.equal('user created');
+        chai.request(server)
+          .post('/api/login')
+          .send({ username: "user", password: "testpwd" })
+          .end(function (err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.success.should.equal(true);
+            res.body.should.have.property('message');
+            res.body.message.should.equal('logged');
+            done();
+          });
       });
   });
 });

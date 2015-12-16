@@ -15,19 +15,20 @@ var User = require('../app/models/user');
 chai.use(chaiHttp);
 
 
-describe('Testing user call', function () {
+describe('Testing friends call', function () {
 
 	this.timeout(5000);
 	var usersArray;
 	var user;
+	var userToFriend;
 	var token;
-	
+
 	before(function (done) {
 		User.collection.drop();
 		user = new User();
 		user.username = 'username';
 		user.password = bcrypt.hashSync('password');
-		user.save(function (err) {			
+		user.save(function (err) {
 			User.find(function (err, users) {
 				usersArray = users;
 				user = users[0];
@@ -36,7 +37,15 @@ describe('Testing user call', function () {
 					audience: user._id,
 					expiresIn: config.jwt.expire
 				});
-				done();
+				userToFriend = new User();
+				userToFriend.username = 'userToFriend';
+				userToFriend.password = bcrypt.hashSync('password');
+				userToFriend.save(function (err) {
+					User.findByUsername('userToFriend', function (err, users) {						
+						userToFriend = users[0];
+						done();
+					});
+				});
 			});
 		});
 	});
@@ -46,41 +55,43 @@ describe('Testing user call', function () {
 		done();
 	})
 
-	it('should get all users', function (done) {
+	it('should add a friend', function (done) {
 		chai.request(server)
-			.get('/api/users')
+			.put('/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
-			.end(function (err, res) {				
+			.send({ friendId: userToFriend._id })
+			.end(function (err, res) {
+				res.should.have.status(201);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.have.property('success');
+				res.body.success.should.equal(true);
+				res.body.should.have.property('message');
+				res.body.message.should.be.equal('friend added');
+				done();
+			});
+	});
+	it('should get all friends', function (done) {
+		chai.request(server)
+			.get('/api/users/' + user._id + '/friends')
+			.set('Authorization', 'Bearer ' + token)
+			.end(function (err, res) {
 				res.should.have.status(200);
 				res.should.be.json;
 				res.body.should.be.a('object');
 				res.body.should.have.property('success');
 				res.body.success.should.equal(true);
-				res.body.should.have.property('users');
-				res.body.users.should.be.a('array');
-				res.body.users.length.should.be.equal(usersArray.length);
+				res.body.should.have.property('friendList');
+				res.body.friendList.should.be.a('array');
+				res.body.friendList.length.should.be.equal(1);
 				done();
 			});
 	});
-	it('should get user : user', function (done) {
+	it('should delete userToFriend', function (done) {
 		chai.request(server)
-			.get('/api/users/' + user._id)
+			.delete('/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
-			.end(function (err, res) {				
-				res.should.have.status(200);
-				res.should.be.json;
-				res.body.should.be.a('object');
-				res.body.should.have.property('success');
-				res.body.success.should.equal(true);
-				res.body.user.username.should.	be.equal(user.username);
-				done();
-			});
-	});
-	it('should change username of user with newUser', function (done) {
-		chai.request(server)
-			.put('/api/users/' + user._id + '/username')
-			.set('Authorization', 'Bearer ' + token)
-			.send({ username: 'newUser' })
+			.send({ friendId: userToFriend._id })
 			.end(function (err, res) {
 				res.should.have.status(200);
 				res.should.be.json;
@@ -88,15 +99,24 @@ describe('Testing user call', function () {
 				res.body.should.have.property('success');
 				res.body.success.should.equal(true);
 				res.body.should.have.property('message');
-				res.body.message.should.equal('username changed');
-				chai.request(server)
-					.get('/api/users/' + user._id)
-					.set('Authorization', 'Bearer ' + token)
-					.end(function (err, res) {
-						res.body.user.username.should.be.equal('newUser');
-						done();
-					});
+				res.body.message.should.be.equal('friend deleted');
+				done();
 			});
 	});
-	it('should change the password user with : newPassword');
+	it('should not find userToFriend to delete', function (done) {
+		chai.request(server)
+			.delete('/api/users/' + user._id + '/friends')
+			.set('Authorization', 'Bearer ' + token)
+			.send({ friendId: userToFriend._id })
+			.end(function (err, res) {
+				res.should.have.status(404);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.have.property('success');
+				res.body.success.should.equal(false);
+				res.body.should.have.property('message');
+				res.body.message.should.be.equal('friend not found');
+				done();
+			});
+	});
 });

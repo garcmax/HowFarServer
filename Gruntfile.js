@@ -1,14 +1,14 @@
 // Gruntfile.js
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   grunt.initConfig({
 
     pkg: grunt.file.readJSON('package.json'),
 
     //get the current git revision
-     revision: {
+    revision: {
 
-     },
+    },
 
     // watch our node server for changes
     nodemon: {
@@ -19,23 +19,26 @@ module.exports = function(grunt) {
 
     //compress all the files needed to run
     compress: {
-      main : {
+      main: {
         options: {
-            archive: "dist/<%= pkg.name %>-<%= grunt.config.get('meta.revision') %>.zip"
+          archive: "dist/<%= pkg.name %>-<%= grunt.config.get('meta.revision') %>.zip"
         },
-        files: [{src: ['node_modules/**', 'app/**', 'config/**', '*.js'], dest: 'dist'}]
+        files: [{ src: ['node_modules/**', 'app/**', 'config/**', '*.js'], dest: 'dist' }]
       }
     },
-    
-     mochaTest: {
-       test: {
-        options: {
-          reporter: 'spec',
-          captureFile: 'test/log.txt', // Optionally capture the reporter output to a file
-          quiet: false, // Optionally suppress output to standard out (defaults to false)
-          clearRequireCache: false // Optionally clear the require cache before running tests (defaults to false)
-        },
-        src: ['test/*.js']
+
+    mochaTest: {     
+      testLogReg: {
+        src: ['test/LoginAndRegisterSpec.js']
+      },
+      testUser: {
+        src: ['test/UserSpec.js']
+      },
+      testFriends: {
+        src: ['test/FriendsSpec.js']
+      },
+      testLocation: {
+        src: ['test/LocationSpec.js']
       }
     }
   });
@@ -46,6 +49,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.registerTask('default', ['nodemon']);
-  grunt.registerTask('test', ['mochaTest']);
-  grunt.registerTask('dist', ['mochaTest','revision','compress']);
- };
+  grunt.registerTask('test', ['mochaTest:testLogReg', 'mochaTest:testUser','mochaTest:testFriends', 'mochaTest:testLocation']);
+  grunt.registerTask('testLogReg', ['mochaTest:testLogReg']);
+  grunt.registerTask('testUser', ['mochaTest:testUser']);
+  grunt.registerTask('testFriends', ['mochaTest:testFriends']);
+  grunt.registerTask('testLocation', ['mochaTest:testLocation']);
+  grunt.registerTask('dist', ['mochaTest', 'revision', 'compress']);
+};
