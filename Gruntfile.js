@@ -23,11 +23,17 @@ module.exports = function (grunt) {
         options: {
           archive: "dist/<%= pkg.name %>-<%= grunt.config.get('meta.revision') %>.zip"
         },
-        files: [{ src: ['node_modules/**', 'app/**', 'config/**', '*.js'], dest: 'dist' }]
+        files: [
+            { src: ['app/**'], dest: '.'},
+            { src: ['config/**'], dest: '.'},
+            { src: ['server/**'], dest: '.'},
+            { src: ['node_modules/**'], dest: '.'},
+            { src: ['Gruntfile.js'], dest: '.'}
+          ]
       }
     },
 
-    mochaTest: {     
+    mochaTest: {
       testLogReg: {
         src: ['test/LoginAndRegisterSpec.js']
       },
@@ -40,6 +46,16 @@ module.exports = function (grunt) {
       testLocation: {
         src: ['test/LocationSpec.js']
       }
+    },
+
+    jshint: {
+      tests: {
+        options: {
+          '-W030': true,
+        },
+        src: ['test/**.js']
+      },
+      app: ['Gruntfile.js', 'server/server.js', 'app/routes.js']
     }
   });
 
@@ -47,12 +63,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-git-revision');
   grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
-  grunt.registerTask('default', ['nodemon']);
-  grunt.registerTask('test', ['mochaTest:testLogReg', 'mochaTest:testUser','mochaTest:testFriends', 'mochaTest:testLocation']);
+  grunt.registerTask('default', ['jshint:app', 'nodemon']);
+  grunt.registerTask('test', ['jshint:tests', 'mochaTest:testLogReg', 'mochaTest:testUser', 'mochaTest:testFriends', 'mochaTest:testLocation']);
   grunt.registerTask('testLogReg', ['mochaTest:testLogReg']);
   grunt.registerTask('testUser', ['mochaTest:testUser']);
   grunt.registerTask('testFriends', ['mochaTest:testFriends']);
   grunt.registerTask('testLocation', ['mochaTest:testLocation']);
-  grunt.registerTask('dist', ['mochaTest', 'revision', 'compress']);
+  grunt.registerTask('dist', ['jshint', 'mochaTest', 'revision', 'compress']);
 };

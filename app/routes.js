@@ -47,17 +47,14 @@ module.exports = function (app, express) {
                     res.status(500).json({ success: false, message: "login server error", error: err });
                     return;
                 }
-                if (userArr.length == 0) {
+                if (userArr.length === 0) {
                     res.status(401).json({ success: false, message: "bad credentials" });
                     return;
                 }
-
-                for (var i = 0; i < userArr.length; i++) {
-                    if (bcrypt.compareSync(req.body.password, userArr[i].password)) {
-                        res.location('/users/' + userArr[i]._id);
-                        res.status(200).json({ success: true, message: "logged" });
-                        return;
-                    }
+                if (bcrypt.compareSync(req.body.password, userArr[0].password)) {
+                    res.location('/users/' + userArr[0]._id);
+                    res.status(200).json({ success: true, message: "logged" });
+                    return;
                 }
                 res.status(401).json({ success: false, message: "bad credentials" });
             });
@@ -73,7 +70,8 @@ module.exports = function (app, express) {
             }
             var user = new User();
             user.username = req.body.username;
-            user.password = bcrypt.hashSync(req.body.password);
+            var salt = bcrypt.genSaltSync(10);
+            user.password = bcrypt.hashSync(req.body.password, salt);
             user.save(function (err) {
                 if (err) {
                     res.status(500).json({ success: false, message: "fail to register", error: err });
@@ -110,7 +108,7 @@ module.exports = function (app, express) {
                 if (err)
                     res.status(500).json({ success: false, message: "fail to get user", error: err });
                 res.status(200).json({ success: true, user: user });
-            })
+            });
         });
 
     router.route('/users/:user_id/username')
@@ -230,10 +228,10 @@ module.exports = function (app, express) {
                     });
                 }
             });
-        })
+        });
 
     // REGISTER OUR ROUTES -------------------------------
     // all of our routes will be prefixed with /api
     app.use('/v1/api', router);
 
-}
+};

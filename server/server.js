@@ -32,7 +32,7 @@ mongoose.connect(config.mongoURI[config.env], function (err, res) {
       if (err)
         console.log(err);
       console.log('Connected to Database: ' + config.mongoURI[config.env]);
-    })
+    });
   }
 });
 

@@ -4,7 +4,7 @@ var chai = require('chai');
 var chaiHttp = require('chai-http');
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
-var jwt = require('jsonwebtoken')
+var jwt = require('jsonwebtoken');
 
 var server = require('../server/server');
 var should = chai.should();

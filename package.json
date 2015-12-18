@@ -27,6 +27,7 @@
     "chai-http": "^1.0.0",
     "grunt": "^0.4.5",
     "grunt-contrib-compress": "^0.13.0",
+    "grunt-contrib-jshint": "^0.11.3",
     "grunt-git-revision": "0.0.1",
     "grunt-mocha": "^0.4.13",
     "grunt-mocha-test": "^0.12.7",
