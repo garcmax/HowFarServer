@@ -14,9 +14,9 @@ var User = require('../app/models/user');
 chai.use(chaiHttp);
 
 
-describe('Testing login and register', function () {
+describe('Testing login and register API', function () {
 
-  this.timeout(2000);
+  this.timeout(5000);
 
 
   before(function (done) {
@@ -24,14 +24,14 @@ describe('Testing login and register', function () {
     done();
   });
 
-  after(function (done) {
-    User.collection.drop();
-    done();
-  })
+  /*after(function (done) {
+     User.collection.drop();
+     done();
+   })*/
 
-  it('should register user : user/password', function (done) {
+  it('should register and log user : user/password', function (done) {
     chai.request(server)
-      .post('/api/register').send({ username: "user", password: "password" })
+      .post('/v1/api/register').send({ username: "user", password: "password" })
       .end(function (err, res) {
         res.should.have.status(201);
         res.should.be.json;
@@ -49,26 +49,39 @@ describe('Testing login and register', function () {
             decoded.iss.should.equal(config.jwt.issuer);
           }
         });
-        done();
+        chai.request(server)
+          .post('/v1/api/login').send({ username: "user", password: "password" })
+          .end(function (err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.success.should.equal(true);
+            res.body.should.have.property('message');
+            res.body.message.should.equal('logged');
+            done();
+          });
       });
   });
-  it('should login the user : user/password', function (done) {
+  it('should not register user : user/password because of duplicate username', function (done) {
     chai.request(server)
-      .post('/api/login').send({ username: "user", password: "password" })
+      .post('/v1/api/register').send({ username: "user", password: "password" })
       .end(function (err, res) {
-        res.should.have.status(200);
+        res.should.have.status(500);
         res.should.be.json;
         res.body.should.be.a('object');
         res.body.should.have.property('success');
-        res.body.success.should.equal(true);
+        res.body.success.should.equal(false);
         res.body.should.have.property('message');
-        res.body.message.should.equal('logged');
+        res.body.message.should.equal('fail to register');
+        res.body.should.have.property('error');
+        res.body.error.code.should.equal(11000);
         done();
       });
   });
   it('should not logged user : user/badpwd', function (done) {
     chai.request(server)
-      .post('/api/login').send({ username: "user", password: "badpwd" })
+      .post('/v1/api/login').send({ username: "user", password: "badpwd" })
       .end(function (err, res) {
         res.should.have.status(401);
         res.should.be.json;
@@ -82,7 +95,7 @@ describe('Testing login and register', function () {
   });
   it('should not logged user : baduser/password', function (done) {
     chai.request(server)
-      .post('/api/login').send({ username: "baduser", password: "password" })
+      .post('/v1/api/login').send({ username: "baduser", password: "password" })
       .end(function (err, res) {
         res.should.have.status(401);
         res.should.be.json;
@@ -94,9 +107,9 @@ describe('Testing login and register', function () {
         done();
       });
   });
-  it('should register user : username very long with space/password very long with space', function (done) {
+  it('should register and log user : username very long with space/password very long with space', function (done) {
     chai.request(server)
-      .post('/api/register').send({ username: "username very long with space", password: "password very long with space" })
+      .post('/v1/api/register').send({ username: "username very long with space", password: "password very long with space" })
       .end(function (err, res) {
         res.should.have.status(201);
         res.should.be.json;
@@ -105,26 +118,23 @@ describe('Testing login and register', function () {
         res.body.success.should.equal(true);
         res.body.should.have.property('message');
         res.body.message.should.equal('user created');
-        done();
-      });
-  });
-  it('should login the user : username very long with space/password very long with space', function (done) {
-    chai.request(server)
-      .post('/api/login').send({ username: "username very long with space", password: "password very long with space" })
-      .end(function (err, res) {
-        res.should.have.status(200);
-        res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('success');
-        res.body.success.should.equal(true);
-        res.body.should.have.property('message');
-        res.body.message.should.equal('logged');
-        done();
+        chai.request(server)
+          .post('/v1/api/login').send({ username: "username very long with space", password: "password very long with space" })
+          .end(function (err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.success.should.equal(true);
+            res.body.should.have.property('message');
+            res.body.message.should.equal('logged');
+            done();
+          });
       });
   });
   it('should register user : ù$3rnâmè/p4$$wörd', function (done) {
     chai.request(server)
-      .post('/api/register').send({ username: "ù$3rnâmè", password: "p4$$wörd" })
+      .post('/v1/api/register').send({ username: "ù$3rnâmè", password: "p4$$wörd" })
       .end(function (err, res) {
         res.should.have.status(201);
         res.should.be.json;
@@ -133,26 +143,23 @@ describe('Testing login and register', function () {
         res.body.success.should.equal(true);
         res.body.should.have.property('message');
         res.body.message.should.equal('user created');
-        done();
-      });
-  });
-  it('should login the user : ù$3rnâmè/p4$$wörd', function (done) {
-    chai.request(server)
-      .post('/api/login').send({ username: "ù$3rnâmè", password: "p4$$wörd" })
-      .end(function (err, res) {
-        res.should.have.status(200);
-        res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('success');
-        res.body.success.should.equal(true);
-        res.body.should.have.property('message');
-        res.body.message.should.equal('logged');
-        done();
+        chai.request(server)
+          .post('/v1/api/login').send({ username: "ù$3rnâmè", password: "p4$$wörd" })
+          .end(function (err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('object');
+            res.body.should.have.property('success');
+            res.body.success.should.equal(true);
+            res.body.should.have.property('message');
+            res.body.message.should.equal('logged');
+            done();
+          });
       });
   });
   it('should not register user : us/password', function (done) {
     chai.request(server)
-      .post('/api/register').send({ username: "us", password: "password" })
+      .post('/v1/api/register').send({ username: "us", password: "password" })
       .end(function (err, res) {
         res.should.have.status(400);
         res.should.be.json;
@@ -166,7 +173,7 @@ describe('Testing login and register', function () {
   });
   it('should not register user : user1/pwd', function (done) {
     chai.request(server)
-      .post('/api/register').send({ username: "user1", password: "pwd" })
+      .post('/v1/api/register').send({ username: "user1", password: "pwd" })
       .end(function (err, res) {
         res.should.have.status(400);
         res.should.be.json;
@@ -175,32 +182,6 @@ describe('Testing login and register', function () {
         res.body.should.have.property('message');
         res.body.message.should.equal('username or password too short');
         done();
-      });
-  });
-  it('should register and log user : user/testpwd', function (done) {
-    chai.request(server)
-      .post('/api/register').send({ username: "user", password: "testpwd" })
-      .end(function (err, res) {
-        res.should.have.status(201);
-        res.should.be.json;
-        res.body.should.be.a('object');
-        res.body.should.have.property('success');
-        res.body.success.should.equal(true);
-        res.body.should.have.property('message');
-        res.body.message.should.equal('user created');
-        chai.request(server)
-          .post('/api/login')
-          .send({ username: "user", password: "testpwd" })
-          .end(function (err, res) {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.be.a('object');
-            res.body.should.have.property('success');
-            res.body.success.should.equal(true);
-            res.body.should.have.property('message');
-            res.body.message.should.equal('logged');
-            done();
-          });
       });
   });
 });

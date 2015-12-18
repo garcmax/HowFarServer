@@ -15,16 +15,18 @@ var User = require('../app/models/user');
 chai.use(chaiHttp);
 
 
-describe('Testing friends call', function () {
+describe('Testing locations call', function () {
 
 	this.timeout(5000);
 	var usersArray;
 	var user;
 	var userToFriend;
 	var token;
-	var location = {longitude: '48.8304239',
-			latitude: '2.376587819'};
 	var date = new Date();
+	var location = {longitude: '48.8304239',
+			latitude: '2.376587819',
+			broadcast:true,
+			date: date};
 
 	before(function (done) {
 		User.collection.drop();
@@ -65,9 +67,24 @@ describe('Testing friends call', function () {
 		done();
 	})*/
 
+	it('should not broadcast location', function (done) {
+		chai.request(server)
+			.get('/v1/api/users/' + user._id + '/location')
+			.set('Authorization', 'Bearer ' + token)
+			.end(function (err, res) {
+				res.should.have.status(403);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.have.property('success');
+				res.body.success.should.equal(false);
+				res.body.should.have.property('message');
+				res.body.message.should.be.equal('private location');
+				done();
+			});
+	});
 	it('should update users location', function (done) {
 		chai.request(server)
-			.put('/api/users/' + user._id + '/location')
+			.put('/v1/api/users/' + user._id + '/location')
 			.set('Authorization', 'Bearer ' + token)
 			.send({loc : location})
 			.end(function (err, res) {
@@ -81,5 +98,22 @@ describe('Testing friends call', function () {
 				done();
 			});
 	});
-	it('should broadcast location');
+	it('should broadcast location', function (done) {
+		chai.request(server)
+			.get('/v1/api/users/' + user._id + '/location')
+			.set('Authorization', 'Bearer ' + token)
+			.end(function (err, res) {
+				res.should.have.status(200);
+				res.should.be.json;
+				res.body.should.be.a('object');
+				res.body.should.have.property('success');
+				res.body.success.should.equal(true);
+				res.body.should.have.property('message');
+				res.body.message.should.be.equal('location sent');
+				res.body.should.have.property('location');
+				res.body.location.should.be.a('object');
+				res.body.location.longitude.should.equal('48.8304239');
+				done();
+			});
+	});
 });

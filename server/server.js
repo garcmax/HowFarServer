@@ -1,14 +1,15 @@
 // modules =================================================
-var express        = require('express');
-var app            = express();
-var bodyParser     = require('body-parser');
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
-var mongoose       = require('mongoose');
-var path           = require('path');
-var https          = require('https');
-var http           = require('http');
-var fs             = require('fs');
-var morgan         = require('morgan');
+var mongoose = require('mongoose');
+var path = require('path');
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
+var morgan = require('morgan');
+var User = require('../app/models/user');
 
 // configuration ===========================================
 
@@ -23,13 +24,20 @@ var config = require('../config/serverConfig');
 };*/
 
 // connect to our mongoDB database
-mongoose.connect(config.mongoURI[config.env], function(err, res) {
-  if(err) {
+mongoose.connect(config.mongoURI[config.env], function (err, res) {
+  if (err) {
     console.log('Error connecting to the database. ' + err);
-  } else {
-    console.log('Connected to Database: ' + config.mongoURI[config.env]);
+  } else {    
+    User.ensureIndexes(function (err) {
+      if (err)
+        console.log(err);
+      console.log('Connected to Database: ' + config.mongoURI[config.env]);
+    })
   }
 });
+
+//if (config.end != 'prod')
+//  mongoose.set('debug', true);
 
 // log all the request
 app.use(morgan(config.log.format));

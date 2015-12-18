@@ -44,7 +44,7 @@ module.exports = function (app, express) {
         .post(function (req, res) {
             User.findByUsername(req.body.username, function (err, userArr) {
                 if (err) {
-                    res.status(500).json({ success: false, message: "login server error" });
+                    res.status(500).json({ success: false, message: "login server error", error: err });
                     return;
                 }
                 if (userArr.length == 0) {
@@ -75,8 +75,9 @@ module.exports = function (app, express) {
             user.username = req.body.username;
             user.password = bcrypt.hashSync(req.body.password);
             user.save(function (err) {
-                if (err)
-                    res.status(500).json({ success: false, message: "fail to register" });
+                if (err) {
+                    res.status(500).json({ success: false, message: "fail to register", error: err });
+                }
                 else {
                     var token = jwt.sign({}, config.jwt.secret, {
                         issuer: config.jwt.issuer,
@@ -94,11 +95,10 @@ module.exports = function (app, express) {
         .get(function (req, res) {
             User.find(function (err, users) {
                 if (err)
-                    res.status(500).json({ success: false, message: "fail to get users" });
+                    res.status(500).json({ success: false, message: "fail to get users", error: err });
                 res.status(200).json({ success: true, users: users });
             });
         });
-
 
     router.route('/users/:user_id')
     //get one user from his id
@@ -108,7 +108,7 @@ module.exports = function (app, express) {
             }
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(500).json({ success: false, message: "fail to get user" });
+                    res.status(500).json({ success: false, message: "fail to get user", error: err });
                 res.status(200).json({ success: true, user: user });
             })
         });
@@ -125,7 +125,7 @@ module.exports = function (app, express) {
                 user.username = req.body.username;
                 user.save(function (err) {
                     if (err)
-                        res.status(500).json({ success: false, message: "fail to change username" });
+                        res.status(500).json({ success: false, message: "fail to change username", error: err });
                     else
                         res.status(200).json({ success: true, message: "username changed" });
                 });
@@ -138,31 +138,36 @@ module.exports = function (app, express) {
         .get(function (req, res) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(500).json({ success: false, message: "fail to get friends" });
-                res.status(200).json({success : true, friendList : user.friendsList});
+                    res.status(500).json({ success: false, message: "fail to get friends", error: err });
+                res.status(200).json({ success: true, friendList: user.friendsList });
             });
         })
     //add a friend
         .put(function (req, res) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(500).json({ success: false, message: "internal error when seeking user" });
+                    res.status(500).json({ success: false, message: "internal error when seeking user", error: err });
                 else {
                     var friendExist = false;
                     user.friendsList.forEach(function (friend) {
-                        if (friend.friendId == req.body.friendId)
+                        if (friend.username == req.body.friendUsername)
                             friendExist = true;
                     });
                     if (friendExist)
                         res.status(403).json({ success: false, message: "friend already exist" });
                     else {
-                        user.friendsList.push(req.body);
-                        user.save(function (err) {
-                            if (err)
-                                res.status(500).json({ success: false, message: "fail to add friend" });
-                            else
-                                res.status(201).json({ success: true, message: "friend added" });
-                        })
+                        User.findByUsername(req.body.friendUsername, function (err, userArr) {
+                            var friendToAdd = userArr[0];
+                            var friend = { username: friendToAdd.username, id: friendToAdd._id };
+                            user.friendsList.push(friend);
+                            user.save(function (err) {
+                                if (err)
+                                    res.status(500).json({ success: false, message: "fail to add friend", error: err });
+                                else
+                                    res.status(201).json({ success: true, message: "friend added", friend: friend });
+                            });
+
+                        });
                     }
                 }
             });
@@ -171,12 +176,12 @@ module.exports = function (app, express) {
         .delete(function (req, res) {
             User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(500).json({ success: false, message: "internal error when seeking user" });
+                    res.status(500).json({ success: false, message: "internal error when seeking user", error: err });
                 else {
                     var friendExist = false;
                     var index;
                     user.friendsList.forEach(function (friend, i) {
-                        if (friend.friendId == req.body.friendId) {
+                        if (friend.id == req.body.friendId) {
                             friendExist = true;
                             index = i;
                         }
@@ -185,40 +190,50 @@ module.exports = function (app, express) {
                         user.friendsList.splice(index, 1);
                         user.save(function (err) {
                             if (err)
-                                res.status(500).json({ success: false, message: "fail to delete friend" });
+                                res.status(500).json({ success: false, message: "fail to delete friend", error: err });
                             else
                                 res.status(200).json({ success: true, message: "friend deleted" });
                         });
                     } else {
-                        res.status(404).json({ success: false, message: "friend not found" });
+                        res.status(400).json({ success: false, message: "friend does not exist" });
                     }
                 }
             });
         });
-        
-     router.route('/users/:user_id/location')
-     //get location of the user
-     .get(function (req, res) {
-        
-     })
-     .put(function (req, res) {
-         User.findById(req.params.user_id, function (err, user) {
-            if (err)
-                res.status(500).json({ success: false, message: "internal error when seeking user" });
-            else {
-                user.loc = req.body.loc;
-                user.save(function (err) {
+
+    router.route('/users/:user_id/location')
+    //get location of the user
+        .get(function (req, res) {
+            User.findById(req.params.user_id, function (err, user) {
                 if (err)
-                    res.status(500).json({ success: false, message: "fail to update location" });
-                else
-                    res.status(200).json({ success: true, message: "location updated" });
-                });
-            }
-         });
-     })
+                    res.status(500).json({ success: false, message: "internal error when seeking user", error: err });
+                else {
+                    var loc = user.loc;
+                    if (loc.broadcast)
+                        res.status(200).json({ success: true, message: "location sent", location: loc });
+                    else
+                        res.status(403).json({ success: false, message: "private location" });
+                }
+            });
+        })
+        .put(function (req, res) {
+            User.findById(req.params.user_id, function (err, user) {
+                if (err)
+                    res.status(500).json({ success: false, message: "internal error when seeking user", error: err });
+                else {
+                    user.loc = req.body.loc;
+                    user.save(function (err) {
+                        if (err)
+                            res.status(500).json({ success: false, message: "fail to update location", error: err });
+                        else
+                            res.status(200).json({ success: true, message: "location updated" });
+                    });
+                }
+            });
+        })
 
     // REGISTER OUR ROUTES -------------------------------
     // all of our routes will be prefixed with /api
-    app.use('/api', router);
+    app.use('/v1/api', router);
 
 }

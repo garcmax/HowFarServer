@@ -57,9 +57,9 @@ describe('Testing friends call', function () {
 
 	it('should add a friend', function (done) {
 		chai.request(server)
-			.put('/api/users/' + user._id + '/friends')
+			.put('/v1/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
-			.send({ friendId: userToFriend._id })
+			.send({ friendUsername: userToFriend.username })
 			.end(function (err, res) {
 				res.should.have.status(201);
 				res.should.be.json;
@@ -68,12 +68,15 @@ describe('Testing friends call', function () {
 				res.body.success.should.equal(true);
 				res.body.should.have.property('message');
 				res.body.message.should.be.equal('friend added');
+				res.body.should.have.property('friend');
+				res.body.friend.should.be.a('object');
+				res.body.friend.username.should.be.equal(userToFriend.username);
 				done();
 			});
 	});
 	it('should get all friends', function (done) {
 		chai.request(server)
-			.get('/api/users/' + user._id + '/friends')
+			.get('/v1/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
 			.end(function (err, res) {
 				res.should.have.status(200);
@@ -89,7 +92,7 @@ describe('Testing friends call', function () {
 	});
 	it('should delete userToFriend', function (done) {
 		chai.request(server)
-			.delete('/api/users/' + user._id + '/friends')
+			.delete('/v1/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
 			.send({ friendId: userToFriend._id })
 			.end(function (err, res) {
@@ -105,17 +108,17 @@ describe('Testing friends call', function () {
 	});
 	it('should not find userToFriend to delete', function (done) {
 		chai.request(server)
-			.delete('/api/users/' + user._id + '/friends')
+			.delete('/v1/api/users/' + user._id + '/friends')
 			.set('Authorization', 'Bearer ' + token)
 			.send({ friendId: userToFriend._id })
 			.end(function (err, res) {
-				res.should.have.status(404);
+				res.should.have.status(400);
 				res.should.be.json;
 				res.body.should.be.a('object');
 				res.body.should.have.property('success');
 				res.body.success.should.equal(false);
 				res.body.should.have.property('message');
-				res.body.message.should.be.equal('friend not found');
+				res.body.message.should.be.equal('friend does not exist');
 				done();
 			});
 	});
