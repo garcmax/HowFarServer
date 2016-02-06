@@ -45,6 +45,9 @@ module.exports = function (grunt) {
       },
       testLocation: {
         src: ['test/LocationSpec.js']
+      },
+      testTokenRenewal: {
+        src: ['test/TokenRenewalSpec.js']
       }
     },
 
@@ -66,10 +69,11 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
   grunt.registerTask('default', ['jshint:app', 'nodemon']);
-  grunt.registerTask('test', ['jshint:tests', 'mochaTest:testLogReg', 'mochaTest:testUser', 'mochaTest:testFriends', 'mochaTest:testLocation']);
+  grunt.registerTask('test', ['jshint:tests', 'mochaTest:testLogReg', 'mochaTest:testUser', 'mochaTest:testFriends', 'mochaTest:testLocation', 'mochaTest:testTokenRenewal']);
   grunt.registerTask('testLogReg', ['mochaTest:testLogReg']);
   grunt.registerTask('testUser', ['mochaTest:testUser']);
   grunt.registerTask('testFriends', ['mochaTest:testFriends']);
   grunt.registerTask('testLocation', ['mochaTest:testLocation']);
+  grunt.registerTask('testTokRen', ['mochaTest:testTokenRenewal']);
   grunt.registerTask('dist', ['jshint', 'mochaTest', 'revision', 'compress']);
 };

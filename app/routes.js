@@ -19,8 +19,17 @@ module.exports = function (app, express) {
             }
             var token = bearer[1];
             jwt.verify(token, config.jwt.secret, function (err, decoded) {
-                if (err)
+                if (err.name == 'TokenExpiredError') {
+                    if (req.body.refToken) {
+
+                    } else {
+                        res.status(401).json({ success: false, message: "failed to authenticate token" });
+                    }
+                }
+                else if (err) {
                     res.status(401).json({ success: false, message: "failed to authenticate token" });
+                    console.log(err);
+                }
                 else {
                     req.decoded = decoded;
                 }

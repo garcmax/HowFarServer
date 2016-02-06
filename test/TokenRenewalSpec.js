@@ -44,12 +44,12 @@ describe('Testing renewal of token', function () {
 		});
 	});
 
-	it('should renew the token', function (done) {
+	it('should get a 401', function (done) {
         chai.request(server)
             .get('/v1/api/users')
             .set('Authorization', 'Bearer ' + token)
             .end(function (err, res) {
-                res.should.have.status(200);
+                res.should.have.status(401);
                 done();
             });
 	});
