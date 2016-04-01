@@ -7,7 +7,7 @@ config.port = {
     };
 config.mongoURI = {
         dev : 'mongodb://localhost/howfar',
-        prod : process.env.BDD || 'mongodb://howfar:howfarpwd@ds049624.mongolab.com:49624/howfar',
+        prod : process.env.BDD || 'mongodb://login:password@ds049624.mongolab.com:49624/howfar',
         test  : 'mongodb://localhost/node-test'
     };
 config.env = process.env.NODE_ENV || "dev";
